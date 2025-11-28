@@ -1,39 +1,10 @@
-# Wallet files (sensitive data)
+node_modules/
+.npm
+npm-debug.log
 wallets.json
 .worker-temp.js
-.replit
-
-# Node modules
-node_modules/
-package-lock.json
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# OS files
 .DS_Store
-Thumbs.db
-*.swp
-*.swo
-*~
-.vscode/
-.idea/
-
-# Logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Temporary files
-.worker-temp.js
-temp/
-tmp/
-
-# IDE
-.vscode
-.idea
-*.sublime-project
-*.sublime-workspace
+dist/
+build/
+.env.local

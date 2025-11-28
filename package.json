@@ -1,15 +1,29 @@
 {
   "name": "wallet-custom",
   "version": "1.0.0",
-  "description": "",
+  "description": "EVM Vanity Wallet Generator - Generate Ethereum wallets with custom address patterns",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "node index.js --no-save -p abc -n 1",
+    "help": "node index.js --help"
   },
-  "keywords": [],
+  "bin": {
+    "vanity-wallet": "./index.js"
+  },
+  "keywords": [
+    "ethereum",
+    "wallet",
+    "vanity",
+    "generator",
+    "crypto"
+  ],
   "author": "HokiReceh",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "dependencies": {
     "commander": "^14.0.2",
     "ethers": "^6.15.0"
