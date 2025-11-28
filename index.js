@@ -79,6 +79,66 @@ class Spinner {
 
 const ora = (text) => new Spinner(text);
 
+// Language translations
+const translations = {
+  en: {
+    title: '🔐 Vanity Wallet Generator - Multi-threaded',
+    cpuCores: 'CPU Cores:',
+    cpuModel: 'CPU Model:',
+    threads: 'Threads:',
+    pattern: 'Pattern:',
+    position: 'Position:',
+    caseSensitive: 'Case Sensitive:',
+    targetCount: 'Target Count:',
+    estAttempts: 'Est. Attempts:',
+    estTime: 'Est. Time:',
+    warning: '⚠️  WARNING: This pattern is EXTREMELY difficult!',
+    warningDetail: 'Double-ended patterns can take hours or days!\nConsider using shorter patterns or single-ended matching.',
+    walletFound: '✓ Wallet #{n} Found!',
+    address: 'Address:',
+    privateKey: 'Private Key:',
+    mnemonic: 'Mnemonic:',
+    attempts: 'Attempts:',
+    complete: '✓ Generation Complete!',
+    totalAttempts: 'Total Attempts:',
+    timeElapsed: 'Time Elapsed:',
+    avgRate: 'Average Rate:',
+    peakRate: 'Peak Rate:',
+    savedTo: 'Saved to:',
+    securityWarning: '⚠️  SECURITY WARNING:',
+    keepPrivateKeys: 'Keep your private keys secure and NEVER share them!',
+    anyoneAccess: 'Anyone with the private key has full access to the wallet.'
+  },
+  id: {
+    title: '🔐 Pembuat Dompet Vanity - Multi-threaded',
+    cpuCores: 'Inti CPU:',
+    cpuModel: 'Model CPU:',
+    threads: 'Thread:',
+    pattern: 'Pola:',
+    position: 'Posisi:',
+    caseSensitive: 'Peka Huruf Besar/Kecil:',
+    targetCount: 'Jumlah Target:',
+    estAttempts: 'Perkiraan Upaya:',
+    estTime: 'Perkiraan Waktu:',
+    warning: '⚠️  PERINGATAN: Pola ini SANGAT sulit!',
+    warningDetail: 'Pola dua sisi dapat memakan waktu berjam-jam atau berhari-hari!\nPertimbangkan menggunakan pola yang lebih pendek atau pencocokan satu sisi.',
+    walletFound: '✓ Dompet #{n} Ditemukan!',
+    address: 'Alamat:',
+    privateKey: 'Kunci Pribadi:',
+    mnemonic: 'Mnemonik:',
+    attempts: 'Upaya:',
+    complete: '✓ Generasi Selesai!',
+    totalAttempts: 'Total Upaya:',
+    timeElapsed: 'Waktu Berlalu:',
+    avgRate: 'Rata-rata Tingkat:',
+    peakRate: 'Tingkat Puncak:',
+    savedTo: 'Disimpan ke:',
+    securityWarning: '⚠️  PERINGATAN KEAMANAN:',
+    keepPrivateKeys: 'Jaga kunci pribadi Anda tetap aman dan JANGAN bagikan!',
+    anyoneAccess: 'Siapa pun yang memiliki kunci pribadi memiliki akses penuh ke dompet.'
+  }
+};
+
 // Configuration
 const program = new Command();
 
@@ -92,6 +152,7 @@ program
   .option('-n, --number <int>', 'Number of wallets to generate', '1')
   .option('-o, --output <file>', 'Output file (JSON)', 'wallets.json')
   .option('-t, --threads <int>', `Number of threads (default: ${os.cpus().length})`, os.cpus().length.toString())
+  .option('--lang <string>', 'Language: en or id (default: en)', 'en')
   .option('--no-save', 'Don\'t save to file, only display')
   .option('--double', 'Match pattern at both start AND end (much harder!)', false)
   .option('--prefix <string>', 'Pattern for start (use with --suffix)', '')
@@ -99,6 +160,7 @@ program
   .parse(process.argv);
 
 const options = program.opts();
+const lang = options.lang === 'id' ? translations.id : translations.en;
 
 // Validate pattern
 function validatePattern(pattern) {
@@ -181,15 +243,15 @@ function saveWallets(wallets, filename) {
 }
 
 // Display wallet info
-function displayWallet(wallet, index) {
-  console.log(chalk.bold(chalk.green(`\n✓ Wallet #${index + 1} Found!`)));
-  console.log(chalk.cyan('Address:     ') + chalk.bold(chalk.white(wallet.address)));
-  console.log(chalk.cyan('Private Key: ') + chalk.yellow(wallet.privateKey));
+function displayWallet(wallet, index, langObj) {
+  console.log(chalk.bold(chalk.green(`\n${langObj.walletFound.replace('{n}', index + 1)}`)));
+  console.log(chalk.cyan(langObj.address.padEnd(13)) + chalk.bold(chalk.white(wallet.address)));
+  console.log(chalk.cyan(langObj.privateKey.padEnd(13)) + chalk.yellow(wallet.privateKey));
   if (wallet.mnemonic && typeof wallet.mnemonic === 'string') {
-    console.log(chalk.cyan('Mnemonic:    ') + chalk.gray(wallet.mnemonic));
+    console.log(chalk.cyan(langObj.mnemonic.padEnd(13)) + chalk.gray(wallet.mnemonic));
   }
   if (wallet.attempts) {
-    console.log(chalk.gray(`Attempts: ${formatNumber(wallet.attempts)}`));
+    console.log(chalk.gray(`${langObj.attempts}: ${formatNumber(wallet.attempts)}`));
   }
 }
 
@@ -323,42 +385,41 @@ async function generateVanityWallets() {
   }
 
   // Display configuration
-  console.log(chalk.bold(chalk.blue('\n🔐 Vanity Wallet Generator - Multi-threaded\n')));
-  console.log(chalk.cyan('CPU Cores:      ') + chalk.white(os.cpus().length));
-  console.log(chalk.cyan('CPU Model:      ') + chalk.white(os.cpus()[0].model));
-  console.log(chalk.cyan('Threads:        ') + chalk.bold(chalk.white(threadCount)));
+  console.log(chalk.bold(chalk.blue(`\n${lang.title}\n`)));
+  console.log(chalk.cyan(lang.cpuCores.padEnd(16)) + chalk.white(os.cpus().length));
+  console.log(chalk.cyan(lang.cpuModel.padEnd(16)) + chalk.white(os.cpus()[0].model));
+  console.log(chalk.cyan(lang.threads.padEnd(16)) + chalk.bold(chalk.white(threadCount)));
 
   if (isDouble && pattern) {
     console.log(chalk.cyan('Mode:           ') + chalk.bold(chalk.yellow('DOUBLE-ENDED')));
-    console.log(chalk.cyan('Pattern:        ') + chalk.bold(chalk.white(`0x${pattern}...${pattern}`)));
+    console.log(chalk.cyan(lang.pattern.padEnd(16)) + chalk.bold(chalk.white(`0x${pattern}...${pattern}`)));
   } else if (prefix && suffix) {
     console.log(chalk.cyan('Mode:           ') + chalk.bold(chalk.yellow('PREFIX + SUFFIX')));
     console.log(chalk.cyan('Prefix:         ') + chalk.bold(chalk.white(prefix)));
     console.log(chalk.cyan('Suffix:         ') + chalk.bold(chalk.white(suffix)));
   } else {
-    console.log(chalk.cyan('Pattern:        ') + chalk.bold(chalk.white(pattern || '(any)')));
-    console.log(chalk.cyan('Position:       ') + chalk.white(position));
+    console.log(chalk.cyan(lang.pattern.padEnd(16)) + chalk.bold(chalk.white(pattern || '(any)')));
+    console.log(chalk.cyan(lang.position.padEnd(16)) + chalk.white(position));
   }
 
-  console.log(chalk.cyan('Case Sensitive: ') + chalk.white(caseSensitive ? 'Yes' : 'No'));
-  console.log(chalk.cyan('Target Count:   ') + chalk.white(targetCount));
+  console.log(chalk.cyan(lang.caseSensitive.padEnd(16)) + chalk.white(caseSensitive ? 'Ya/Yes' : 'Tidak/No'));
+  console.log(chalk.cyan(lang.targetCount.padEnd(16)) + chalk.white(targetCount));
 
   const difficulty = estimateDifficulty(pattern, caseSensitive, isDouble, prefix, suffix);
   const estimatedTime = difficulty / (threadCount * 50000);
 
-  console.log(chalk.cyan('Est. Attempts:  ') + chalk.yellow(formatNumber(Math.round(difficulty))));
-  console.log(chalk.cyan('Est. Time:      ') + chalk.yellow(
-    estimatedTime < 1 ? '< 1 second' :
-    estimatedTime < 60 ? `~${Math.round(estimatedTime)} seconds` :
-    estimatedTime < 3600 ? `~${Math.round(estimatedTime / 60)} minutes` :
-    estimatedTime < 86400 ? `~${(estimatedTime / 3600).toFixed(1)} hours` :
-    `~${(estimatedTime / 86400).toFixed(1)} days`
+  console.log(chalk.cyan(lang.estAttempts.padEnd(16)) + chalk.yellow(formatNumber(Math.round(difficulty))));
+  console.log(chalk.cyan(lang.estTime.padEnd(16)) + chalk.yellow(
+    estimatedTime < 1 ? '< 1 detik/second' :
+    estimatedTime < 60 ? `~${Math.round(estimatedTime)} detik/seconds` :
+    estimatedTime < 3600 ? `~${Math.round(estimatedTime / 60)} menit/minutes` :
+    estimatedTime < 86400 ? `~${(estimatedTime / 3600).toFixed(1)} jam/hours` :
+    `~${(estimatedTime / 86400).toFixed(1)} hari/days`
   ));
 
   if (difficulty > 100000000) {
-    console.log(chalk.bold(chalk.yellow('\n⚠️  WARNING: This pattern is EXTREMELY difficult!')));
-    console.log(chalk.yellow('   Double-ended patterns can take hours or days!'));
-    console.log(chalk.yellow('   Consider using shorter patterns or single-ended matching.\n'));
+    console.log(chalk.bold(chalk.yellow(`\n${lang.warning}`)));
+    console.log(chalk.yellow(`   ${lang.warningDetail.replace('\n', '\n   ')}\n`));
   }
 
   console.log('');
@@ -391,7 +452,7 @@ async function generateVanityWallets() {
       if (msg.type === 'found') {
         foundWallets.push(msg.wallet);
         spinner.stop();
-        displayWallet(msg.wallet, foundWallets.length - 1);
+        displayWallet(msg.wallet, foundWallets.length - 1, lang);
 
         if (foundWallets.length >= targetCount) {
           // Stop all workers
@@ -446,26 +507,26 @@ async function generateVanityWallets() {
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
   const avgRate = Math.round(totalAttempts / elapsed);
 
-  console.log(chalk.bold(chalk.green(`\n✓ Generation Complete!`)));
-  console.log(chalk.cyan('Total Attempts: ') + chalk.white(formatNumber(totalAttempts)));
-  console.log(chalk.cyan('Time Elapsed:   ') + chalk.white(`${elapsed}s`));
-  console.log(chalk.cyan('Average Rate:   ') + chalk.bold(chalk.white(`${formatNumber(avgRate)}/s`)));
-  console.log(chalk.cyan('Peak Rate:      ') + chalk.white(`~${formatNumber(avgRate * threadCount)}/s (${threadCount} threads)`));
+  console.log(chalk.bold(chalk.green(`\n${lang.complete}`)));
+  console.log(chalk.cyan(lang.totalAttempts.padEnd(16)) + chalk.white(formatNumber(totalAttempts)));
+  console.log(chalk.cyan(lang.timeElapsed.padEnd(16)) + chalk.white(`${elapsed}s`));
+  console.log(chalk.cyan(lang.avgRate.padEnd(16)) + chalk.bold(chalk.white(`${formatNumber(avgRate)}/s`)));
+  console.log(chalk.cyan(lang.peakRate.padEnd(16)) + chalk.white(`~${formatNumber(avgRate * threadCount)}/s (${threadCount} threads)`));
 
   // Save to file
   if (options.save && foundWallets.length > 0) {
     try {
       saveWallets(foundWallets, outputFile);
-      console.log(chalk.cyan('\nSaved to:       ') + chalk.white(path.resolve(outputFile)));
+      console.log(chalk.cyan(`\n${lang.savedTo.padEnd(16)}`) + chalk.white(path.resolve(outputFile)));
     } catch (err) {
       console.error(chalk.red(`\nError saving file: ${err.message}`));
     }
   }
 
   // Security warning
-  console.log(chalk.bold(chalk.red('\n⚠️  SECURITY WARNING:')));
-  console.log(chalk.red('   Keep your private keys secure and NEVER share them!'));
-  console.log(chalk.red('   Anyone with the private key has full access to the wallet.\n'));
+  console.log(chalk.bold(chalk.red(`\n${lang.securityWarning}`)));
+  console.log(chalk.red(`   ${lang.keepPrivateKeys}`));
+  console.log(chalk.red(`   ${lang.anyoneAccess}\n`));
 }
 
 // Run
