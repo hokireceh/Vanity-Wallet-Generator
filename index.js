@@ -172,7 +172,7 @@ function saveWallets(wallets, filename) {
     wallets: wallets.map(w => ({
       address: w.address,
       privateKey: w.privateKey,
-      mnemonic: w.mnemonic ? w.mnemonic.phrase : null,
+      mnemonic: w.mnemonic && typeof w.mnemonic === 'string' ? w.mnemonic : null,
       attempts: w.attempts
     }))
   };
@@ -185,8 +185,8 @@ function displayWallet(wallet, index) {
   console.log(chalk.bold(chalk.green(`\n✓ Wallet #${index + 1} Found!`)));
   console.log(chalk.cyan('Address:     ') + chalk.bold(chalk.white(wallet.address)));
   console.log(chalk.cyan('Private Key: ') + chalk.yellow(wallet.privateKey));
-  if (wallet.mnemonic) {
-    console.log(chalk.cyan('Mnemonic:    ') + chalk.gray(wallet.mnemonic.phrase));
+  if (wallet.mnemonic && typeof wallet.mnemonic === 'string') {
+    console.log(chalk.cyan('Mnemonic:    ') + chalk.gray(wallet.mnemonic));
   }
   if (wallet.attempts) {
     console.log(chalk.gray(`Attempts: ${formatNumber(wallet.attempts)}`));
